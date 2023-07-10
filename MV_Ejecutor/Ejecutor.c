@@ -499,12 +499,40 @@ u32 bStringtoInt(char* string){
   return ac;
 }
 
+int calculaIndireccion(int vOp,int ds){
+
+  int codReg = vOp & 0x00F;
+  int offset = vOP >> 4;
+
+  return ds + codReg + offset;
+
+}
+
+//! VER
 void mov(Mv* mv,int tOpA,int tOpB,int vOpA,int vOpB){
 
   //Variables de op de reg.
   int codReg;
+  int indireccion;
+  int indireccion2;
   int sectorReg;
 
+  if( tOpA == 3 ){ //! OpA -> Indirecto
+    indireccion = calculaIndireccion(vOpA, mv->reg[0]);
+    if( tOpB == 0 )//mov [eax + x] = 10
+      mv->mem[indireccion] = vOpB;
+    else
+      if( tOpB == 1 ) //mov [eax+x] = eax
+        mv->mem[indireccion] = ObtenerValorDeRegistro(mv, vOpB, 2);
+      else
+        if( tOpB == 2 ) //mov [eax+x] = [10]
+          mv->mem[indireccion] = mv->mem[mv->reg[0] + vOpB];
+        else
+          if( tOpB == 3 ){ //mov [eax+x] = [ebx+2];
+            indireccion2 = calculaIndireccion(vOpB, mv->reg[0]);
+            mv->mem[indireccion] = mv->mem[indireccion2];
+          }
+  }else
   if( tOpA==2 ){ //!OpA -> directo -> [10]
 
     if( tOpB == 0 ) // mov [10] 10
@@ -864,6 +892,12 @@ void xor( Mv* mv, int tOpA, int tOpB, int vOpA, int vOpB ){
 
   }
   modCC(mv, op);
+
+}
+
+void slen( Mv* mv, int tOpA, int tOpB, int vOpA, int vOpB ){
+
+
 
 }
 
